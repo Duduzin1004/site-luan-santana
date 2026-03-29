@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Player Luan Santana</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  color: white;
+  background: url('luazin.png') no-repeat center center fixed;
+  background-size: cover;
+}
+
+/* camada escura estilo Spotify */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  z-index: -1;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+
+.banner {
+  height: 200px;
+  background: url('luan-banner.jpg') center/cover;
+  border-radius: 15px;
+  display: flex;
+  align-items: end;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.player {
+  display: flex;
+  gap: 20px;
+  background: rgba(30,30,30,0.9);
+  padding: 20px;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+}
+
+.left {
+  width: 250px;
+  text-align: center;
+}
+
+.left img {
+  width: 100%;
+  border-radius: 10px;
+}
+
+.controls button {
+  margin: 10px;
+  padding: 12px;
+  border: none;
+  border-radius: 50%;
+  background: #1db954;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.controls button:hover {
+  background: #17a74a;
+}
+
+.tempo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+input[type="range"] {
+  flex: 1;
+  accent-color: #1db954;
+}
+
+.right {
+  flex: 1;
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  padding: 10px;
+  border-bottom: 1px solid #333;
+  cursor: pointer;
+}
+
+li:hover {
+  background: #2a2a2a;
+}
+
+.active {
+  color: #1db954;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="banner">
+    <h1>🎧 Luan Santana</h1>
+  </div>
+
+  <div class="player">
+
+    <div class="left">
+      <img id="capa" src="luan.png">
+      <h2 id="titulo">Carregando...</h2>
+      <p id="artista">Luan Santana</p>
+
+      <div class="controls">
+        <button onclick="anterior()">⏮</button>
+        <button onclick="playPause()">▶</button>
+        <button onclick="proxima()">⏭</button>
+      </div>
+
+      <div class="tempo">
+        <span id="tempoAtual">0:00</span>
+        <input type="range" id="progresso" value="0">
+        <span id="duracao">0:00</span>
+      </div>
+    </div>
+
+    <div class="right">
+      <ul id="lista"></ul>
+    </div>
+
+  </div>
+
+</div>
+
+<audio id="audio"></audio>
+
+<script>
+const musicas = [
+  { titulo: "Amar Não é Pecado", artista: "Luan Santana", arquivo: "amar.mp3", capa: "luan.png" },
+  { titulo: "Meteoro", artista: "Luan Santana", arquivo: "meteoro.mp4", capa: "luan.png" },
+  { titulo: "2050", artista: "Luan Santana", arquivo: "2050.mp3", capa: "luan.png" },
+  { titulo: "Acordando o Prédio", artista: "Luan Santana", arquivo: "predio.mp3", capa: "luan.png" },
+  { titulo: "Adrenalina", artista: "Luan Santana", arquivo: "adrenalina.mp3", capa: "luan.png" },
+  { titulo: "As Lembranças Vão na Mala", artista: "Luan Santana", arquivo: "lembrancas.mp3", capa: "luan.png" },
+  { titulo: "Café com Leite", artista: "Luan Santana", arquivo: "cafe.mp3", capa: "luan.png" },
+  { titulo: "Chuva de Arroz", artista: "Luan Santana", arquivo: "chuva.mp3", capa: "luan.png" },
+  { titulo: "Cê Topa", artista: "Luan Santana", arquivo: "cetopa.mp3", capa: "luan.png" },
+  { titulo: "Dia, Lugar e Hora", artista: "Luan Santana", arquivo: "dia.mp3", capa: "luan.png" },
+  { titulo: "Escreve Aí", artista: "Luan Santana", arquivo: "escreveai.mp3", capa: "luan.png" },
+  { titulo: "Eu Não Merecia Isso", artista: "Luan Santana", arquivo: "merecia.mp3", capa: "luan.png" },
+  { titulo: "Garotas Inocentes", artista: "Luan Santana", arquivo: "garotas.mp3", capa: "luan.png" },
+  { titulo: "Morena", artista: "Luan Santana", arquivo: "morena.mp3", capa: "luan.png" },
+  { titulo: "Mesmo Sem Estar (ft. Sandy)", artista: "Luan Santana", arquivo: "mesmo.mp3", capa: "luan.png" },
+  { titulo: "Nosso Tempo é Hoje", artista: "Luan Santana", arquivo: "tempo.mp4", capa: "luan.png" },
+  { titulo: "Não Era Pra Ser Eu", artista: "Luan Santana", arquivo: "naoera.mp3", capa: "luan.png" },
+  { titulo: "Química do Amor", artista: "Luan Santana", arquivo: "quimica.mp3", capa: "luan.png" },
+  { titulo: "Sinais", artista: "Luan Santana", arquivo: "sinais.mp3", capa: "luan.png" },
+  { titulo: "Sogrão Caprichou", artista: "Luan Santana", arquivo: "sograo.mp3", capa: "luan.png" },
+  { titulo: "Tanto Faz", artista: "Luan Santana", arquivo: "tantofaz.mp3", capa: "luan.png" },
+  { titulo: "Te Vivo", artista: "Luan Santana", arquivo: "tevivo.mp3", capa: "luan.png" },
+  { titulo: "Te Esperando", artista: "Luan Santana", arquivo: "teesperando.mp3", capa: "luan.png" },
+  { titulo: "Tudo Que Você Quiser", artista: "Luan Santana", arquivo: "tudo.mp3", capa: "luan.png" },
+  { titulo: "Um Beijo", artista: "Luan Santana", arquivo: "umbeijo.mp3", capa: "luan.png" },
+  { titulo: "Choque Térmico", artista: "Luan Santana", arquivo: "choque.mp3", capa: "luan.png" },
+  { titulo: "Quando a Bad Bater", artista: "Luan Santana", arquivo: "bad.mp3", capa: "luan.png" },
+  { titulo: "Sofrendo Feito Louco", artista: "Luan Santana", arquivo: "sofrendo.mp3", capa: "luan.png" },
+  { titulo: "Vingança", artista: "Luan Santana", arquivo: "vinganca.mp3", capa: "luan.png" },
+  { titulo: "Água com Açúcar", artista: "Luan Santana", arquivo: "agua.mp3", capa: "luan.png" },
+  { titulo: "Menina", artista: "Luan Santana", arquivo: "menina.mp3", capa: "luan.png" },
+  { titulo: "Eu, Você, o Mar e Ela", artista: "Luan Santana", arquivo: "mar.mp4", capa: "luan.png" },
+  {titulo: "Meio Termo", artista: "Luan Santana", arquivo: "meiotermo.mp4", capa: "luan.png" },
+];
+
+let index = 0;
+
+const audio = document.getElementById("audio");
+const lista = document.getElementById("lista");
+const progresso = document.getElementById("progresso");
+const tempoAtual = document.getElementById("tempoAtual");
+const duracao = document.getElementById("duracao");
+
+function formatarTempo(seg) {
+  const min = Math.floor(seg / 60);
+  const sec = Math.floor(seg % 60);
+  return `${min}:${sec < 10 ? "0"+sec : sec}`;
+}
+
+function renderLista() {
+  lista.innerHTML = "";
+  musicas.forEach((m, i) => {
+    const li = document.createElement("li");
+    li.innerText = m.titulo;
+    if (i === index) li.classList.add("active");
+    li.onclick = () => carregarMusica(i);
+    lista.appendChild(li);
+  });
+}
+
+function carregarMusica(i) {
+  index = i;
+  audio.src = musicas[i].arquivo;
+
+  document.getElementById("titulo").innerText = musicas[i].titulo;
+  document.getElementById("capa").src = "luan.png";
+
+  audio.play();
+  renderLista();
+}
+
+function playPause() {
+  if (audio.paused) {
+    audio.play();
+  } else {
+    audio.pause();
+  }
+}
+
+function proxima() {
+  index = (index + 1) % musicas.length;
+  carregarMusica(index);
+}
+
+function anterior() {
+  index = (index - 1 + musicas.length) % musicas.length;
+  carregarMusica(index);
+}
+
+audio.addEventListener("timeupdate", () => {
+  const porcentagem = (audio.currentTime / audio.duration) * 100;
+  progresso.value = porcentagem || 0;
+
+  tempoAtual.innerText = formatarTempo(audio.currentTime);
+  duracao.innerText = formatarTempo(audio.duration || 0);
+});
+
+progresso.addEventListener("input", () => {
+  audio.currentTime = (progresso.value / 100) * audio.duration;
+});
+
+audio.addEventListener("ended", proxima);
+
+renderLista();
+carregarMusica(0);
+</script>
+
+</body>
+</html>
